@@ -1,61 +1,180 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ERP Backend - Laravel 12 + JWT
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Proyecto base de un sistema ERP privado para la gestión de empresas, sucursales, usuarios, roles, clientes, proveedores y stock. Desarrollado en **Laravel 12**, con autenticación por **JWT**, orientado a una arquitectura RESTful y preparado para ser consumido por un frontend independiente en React + TypeScript.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+##  Tecnologías y dependencias principales
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* Laravel 12.12
+* PHP 8.2+
+* MySQL
+* Laragon (entorno local)
+* Tymon JWT Auth (`tymon/jwt-auth`)
+* Composer
+* Git
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🔧 Instalación
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer create-project laravel/laravel erp-backend
+cd erp-backend
+cp .env.example .env
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Configura el .env
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```dotenv
+DB_DATABASE=erp_db
+DB_USERNAME=root
+DB_PASSWORD=
+JWT_SECRET=... (se genera más abajo)
+```
 
-## Laravel Sponsors
+### Base de datos
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```sql
+CREATE DATABASE erp_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-### Premium Partners
+### Dependencias JWT
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+composer require tymon/jwt-auth
+php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+php artisan jwt:secret
+```
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+##  Comandos usados en el proyecto
 
-## Code of Conduct
+```bash
+# Inicializar proyecto
+composer create-project laravel/laravel erp-backend
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Iniciar git
+cd erp-backend
+git init
 
-## Security Vulnerabilities
+# Crear JWT y config
+composer require tymon/jwt-auth
+php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+php artisan jwt:secret
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Modelos y migraciones
+php artisan make:model Usuario -m
+php artisan make:model Empresa -m
+php artisan make:model Sucursal -m
+php artisan make:model Rol -m
+php artisan make:migration create_empresa_usuario_rol_table
+php artisan make:migration create_sucursal_usuario_table
 
-## License
+# Middleware personalizado
+php artisan make:middleware VerificarAccesoEmpresa
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Controladores
+php artisan make:controller AuthController
+php artisan make:controller EmpresaController
+php artisan make:controller ProductoController
+
+# Migrar
+php artisan migrate
+
+# Servidor local
+php artisan serve
+```
+
+---
+
+##  Arquitectura y flujo
+
+* Cada **usuario** está ligado a una o más empresas.
+* Las empresas pueden tener **sucursales**.
+* El **middleware** `VerificarAccesoEmpresa` asegura que solo accedan usuarios con permisos sobre esa empresa.
+* JWT se usa para autenticar y validar peticiones seguras.
+
+---
+
+##  Rutas protegidas y Middleware
+
+```php
+Route::middleware([VerificarAccesoEmpresa::class])->group(function () {
+    Route::get('/empresa/{empresa}/usuarios', [EmpresaController::class, 'listarUsuarios']);
+    Route::post('/empresa/{empresa}/producto', [ProductoController::class, 'crear']);
+});
+```
+
+```php
+// Middleware VerificarAccesoEmpresa.php
+$usuario = JWTAuth::parseToken()->authenticate();
+$empresaId = $request->route('empresa');
+if (!$usuario->empresas()->where('empresas.id', $empresaId)->exists()) {
+    return response()->json(['error' => 'Acceso denegado a esta empresa'], 403);
+}
+```
+
+---
+
+##  Modelo Usuario y Auth
+
+```php
+class Usuario extends Authenticatable implements JWTSubject {
+    protected $fillable = ['nombre', 'email', 'password'];
+    protected $hidden = ['password'];
+
+    public function getJWTIdentifier() {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims() {
+        return [];
+    }
+}
+```
+
+```php
+// AuthController
+public function registrar(Request $request) {...}
+public function login(Request $request) {...}
+public function perfil() {...}
+public function logout() {...}
+```
+
+---
+
+##  Endpoints actuales
+
+| Método | Ruta                       | Controlador                       | Protegido        |
+| ------ | -------------------------- | --------------------------------- | ---------------- |
+| POST   | /api/registro              | AuthController\@registrar         | No               |
+| POST   | /api/login                 | AuthController\@login             | No               |
+| GET    | /api/perfil                | AuthController\@perfil            | JWT              |
+| POST   | /api/logout                | AuthController\@logout            | JWT              |
+| POST   | /api/refresh               | JWT                               | JWT              |
+| GET    | /api/empresa/{id}/usuarios | EmpresaController\@listarUsuarios | JWT + Middleware |
+| POST   | /api/empresa/{id}/producto | ProductoController\@crear         | JWT + Middleware |
+
+---
+
+##  Siguientes pasos recomendados
+
+* Completar migraciones para empresas, roles, relaciones.
+* Crear seeders para roles y un usuario admin.
+* Implementar relaciones en modelos (`empresas()`, `roles()`...)
+* Agregar tests con Postman para login, acción con token.
+* Desarrollar CRUD de productos, stock y sincronización web-bodega.
+
+---
+
+##  Estado del proyecto
+
+Backend en desarrollo
+Aún no se conecta al frontend (React TS)
+Estructura multiempresa funcional
+JWT + protección por empresa funcional
+
+---
+
+## 🔧 Requiere PHP 8.2+ y MySQL. Recomendado usar Laragon para entorno local.
