@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rol extends Model
 {
-    protected $table = 'roles';
+    protected $fillable = ['nombre'];
 
-    public function permisos() {
+    public function permisos()
+    {
         return $this->belongsToMany(Permiso::class, 'permiso_rol');
+    }
+
+    public function usuarios()
+    {
+        return $this->hasMany(Usuario::class);
     }
 }
