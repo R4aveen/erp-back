@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sucursals', function (Blueprint $table) {
+        Schema::create('empresas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empresa_id');
             $table->string('nombre');
-            $table->string('direccion')->nullable();
+            $table->string('rut')->nullable();
+            $table->text('descripcion')->nullable();
             $table->timestamps();
-
-            $table->foreing('empresa_id')->references('id')->on('empresas')->onDelete('cascade');
         });
+
     }
 
     /**
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sucursals');
+        Schema::dropIfExists('empresas');
     }
 };

@@ -18,9 +18,29 @@ class Usuario extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-
     public function getJWTCustomClaims()
     {
         return [];
+    }
+    public function empresa() {
+        return $this->belongsToMany(Empresa::class, 'empresa_usuario_rol');
+    }
+    public function subempresa() {
+        return $this->belongsTo(Subempresa::class);
+    }
+    public function roles() {
+        return $this->belongsToMany(Rol::class, 'empresa_usuario_rol');
+    }
+    public function sucursales() {
+        return $this->belongsToMany(Sucursal::class, 'sucursal_usuario');
+    }
+    public function tienePermiso($clave)
+    {
+        foreach ($this->roles as $rol) {
+            if ($rol->permisos->contains('clave', $clave)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

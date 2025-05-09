@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('usuarios', function (Blueprint $table) {
+        Schema::create('sucursales', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('subempresa_id')->constrained('subempresas')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('email')->unique();
-            $table->string('password');
+            $table->string('ubicacion')->nullable();
+            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('usuarios');
+        Schema::dropIfExists('sucursales');
     }
 };
