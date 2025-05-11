@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Sucursal extends Model
 {
-    protected $fillable = ['nombre', 'direccion', 'subempresa_id'];
+    protected $table = 'sucursales';
     
+    protected $fillable = ['nombre', 'direccion', 'subempresa_id'];
+
     public function subempresa() {
         return $this->belongsTo(Subempresa::class);
     }

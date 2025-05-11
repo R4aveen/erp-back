@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('subempresa_id')->constrained('subempresas')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('ubicacion')->nullable();
+            $table->string('direccion')->nullable();
             $table->text('descripcion')->nullable();
             $table->timestamps();
         });
