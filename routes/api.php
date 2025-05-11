@@ -58,10 +58,9 @@ Route::middleware('auth:api')->group(function () {
 
     // --- OPERACIONES POR SUBEMPRESA -------------
     Route::prefix('/subempresas/{subempresa}')
-          ->middleware('permiso:crear_sucursal')
-          ->group(function () {
-        Route::post('/sucursales',
-             [SucursalController::class, 'store']);
+      ->middleware('permiso:crear_sucursal')
+      ->group(function () {
+        Route::post('/sucursales', [SucursalController::class, 'store']);
     });
     // Crear, editar, eliminar producto
     Route::prefix('/empresas/{empresa}')->middleware(VerificarAccesoEmpresa::class)->group(function () {

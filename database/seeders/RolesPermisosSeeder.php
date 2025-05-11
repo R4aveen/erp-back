@@ -37,6 +37,7 @@ class RolesPermisosSeeder extends Seeder
         // Asignación
         $admin->permisos()->sync($permisos->pluck('id'));
 
+
         $gerente->permisos()->sync(
             $permisos->whereIn('clave', [
                 'crear_producto', 'editar_producto',

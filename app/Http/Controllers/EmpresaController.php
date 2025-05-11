@@ -3,6 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Models\Sucursal;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
 {
@@ -24,5 +31,46 @@ class EmpresaController extends Controller
     {
         $empresa = Empresa::with('subempresas.sucursales.usuarios')->findOrFail($id);
         return response()->json($empresa);
+    }
+
+    public function invitar(Request $request, $empresaId)
+    {
+        $validator = Validator::make($request->all(), [
+            'nombre'       => 'required|string|max:255',
+            'email'        => 'required|email|unique:usuarios,email',
+            'rol_id'       => 'required|exists:roles,id',
+            'sucursal_id'  => 'nullable|exists:sucursales,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $empresa = Empresa::findOrFail($empresaId);
+
+        // Crear usuario provisional
+        $passwordTemporal = Str::random(10);
+
+        $usuario = Usuario::create([
+            'nombre'   => $request->nombre,
+            'email'    => $request->email,
+            'password' => Hash::make($passwordTemporal),
+        ]);
+
+        // Asociar empresa y rol
+        $usuario->empresas()->attach($empresa->id, ['rol_id' => $request->rol_id]);
+
+        // Asociar sucursal si viene
+        if ($request->filled('sucursal_id')) {
+            $usuario->sucursales()->attach($request->sucursal_id);
+        }
+
+        // (Opcional) Enviar correo con credenciales o link de activación
+
+        return response()->json([
+            'mensaje' => 'Usuario invitado correctamente.',
+            'usuario' => $usuario,
+            'password_temporal' => $passwordTemporal
+        ], 201);
     }
 }

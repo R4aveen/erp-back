@@ -13,16 +13,16 @@ class SucursalController extends Controller
         $sucursal = Sucursal::with('usuarios')->findOrFail($id);
         return response()->json($sucursal);
     }
-    public function store(Request $req, Subempresa $subempresa)
-    {
-        $validated = $req->validate([
-            'nombre' => 'required|string|max:255',
-            // …
-        ]);
+    public function store(Request $request, Subempresa $subempresa)
+        {
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'direccion' => 'nullable|string|max:255',
+            ]);
 
-        $suc = $subempresa->sucursales()->create($validated);
+            $sucursal = $subempresa->sucursales()->create($validated);
 
-        return response()->json($suc, 201);
-    }
+            return response()->json($sucursal, 201);
+        }
 
 }

@@ -32,7 +32,7 @@ class AdminSeeder extends Seeder
         ]);
 
         // Asociar a la empresa y rol
-        $admin->empresa()->attach($empresa->id, ['rol_id' => $rol->id]);
+        $admin->empresas()->attach($empresa->id, ['rol_id' => $rol->id]);
 
         echo "Usuario admin creado: admin@tresmarias.cl / admin123\n";
     }

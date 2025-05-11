@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class SubempresaController extends Controller
 {
+    protected $fillable = ['nombre', 'slug', 'descripcion', 'empresa_id'];
+    
     public function sucursales($id)
     {
         $subempresa = Subempresa::with('sucursales')->findOrFail($id);
@@ -17,12 +19,14 @@ class SubempresaController extends Controller
     {
         $validated = $req->validate([
             'nombre' => 'required|string|max:255',
-            // otros campos…
+            'slug' => 'required|string|max:255|unique:subempresas,slug',
+            'descripcion' => 'nullable|string',
         ]);
 
         $sub = $empresa->subempresas()->create($validated);
 
         return response()->json($sub, 201);
     }
+
 
 }

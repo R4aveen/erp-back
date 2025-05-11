@@ -25,12 +25,17 @@ class Usuario extends Authenticatable implements JWTSubject
     public function permisos()  { return $this->belongsToMany(Permiso::class, 'permiso_usuario'); }
 
     /** ¿El usuario posee X permiso (directo o por algún rol)? */
-    public function tienePermiso(string $clave): bool
+   public function tienePermiso(string $clave): bool
     {
-        if ($this->permisos->pluck('clave')->contains($clave)) { return true; }
+        $this->loadMissing(['permisos', 'roles.permisos']);
 
-        return $this->roles->flatMap->permisos      // une permisos de cada rol
-                         ->pluck('clave')
-                         ->contains($clave);
+        if ($this->permisos->pluck('clave')->contains($clave)) {
+            return true;
+        }
+
+        return $this->roles->flatMap->permisos
+                            ->pluck('clave')
+                            ->contains($clave);
     }
+
 }
