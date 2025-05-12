@@ -42,6 +42,25 @@ class AuthController extends Controller
         return response()->json(compact('token'));
     }
 
+    public function activarCuenta(Request $req)
+    {
+        $req->validate([
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $user = Auth::user();
+        if ($user->activado) {
+            return response()->json(['mensaje' => 'Cuenta ya activada.'], 400);
+        }
+
+        $user->password = bcrypt($req->password);
+        $user->activado = true;
+        $user->save();
+
+        return response()->json(['mensaje' => 'Cuenta activada correctamente.']);
+    }
+
+
     public function perfil()
     {
         return response()->json(Auth::user());

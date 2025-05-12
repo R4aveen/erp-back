@@ -16,7 +16,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->group(function () {
 
     // Usuario autenticado
-    Route::get('/perfil', [AuthController::class, 'perfil']);
+    Route::get('/perfil', [AuthController::class, 'perfil'])
+            ->middleware('verificar.activacion');
+
+    Route::post('/activar-cuenta', [AuthController::class, 'activarCuenta']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Jerarquía de empresa

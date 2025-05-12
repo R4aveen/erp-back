@@ -14,10 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (\Illuminate\Foundation\Configuration\Middleware $middleware) {
         $middleware->alias([
             'auth'     => \App\Http\Middleware\Authenticate::class,
-            'permiso' => \App\Http\Middleware\CheckPermiso::class,
-            'rol'     => \App\Http\Middleware\CheckRol::class,
+            'permiso'  => \App\Http\Middleware\CheckPermiso::class,
+            'rol'      => \App\Http\Middleware\CheckRol::class,
+            'verificar.activacion' => \App\Http\Middleware\VerificarActivacion::class, // 👈 Agregado aquí
         ]);
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
