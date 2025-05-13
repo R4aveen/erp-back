@@ -59,6 +59,21 @@ class AuthController extends Controller
 
         return response()->json(['mensaje' => 'Cuenta activada correctamente.']);
     }
+    public function verificarTokenActivacion(Request $request)
+    {
+        $usuario = Usuario::where('token_activacion', $request->query('token'))->first();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Token inválido o expirado.'], 404);
+        }
+
+        return response()->json([
+            'mensaje' => 'Token válido.',
+            'email' => $usuario->email,
+            'nombre' => $usuario->nombre
+        ]);
+    }
+
 
 
     public function perfil()

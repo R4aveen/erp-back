@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\InvitacionUsuario;
 use App\Models\Empresa;
 use App\Models\Usuario;
 use App\Models\Rol;
@@ -10,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class EmpresaController extends Controller
 {
@@ -55,6 +57,7 @@ class EmpresaController extends Controller
             'nombre'   => $request->nombre,
             'email'    => $request->email,
             'password' => Hash::make($passwordTemporal),
+            'activado' => false,
         ]);
 
         // Asociar empresa y rol
@@ -65,7 +68,12 @@ class EmpresaController extends Controller
             $usuario->sucursales()->attach($request->sucursal_id);
         }
 
-        // (Opcional) Enviar correo con credenciales o link de activación
+        // Generar y guardar token de activación + notificar
+        $token = Str::uuid();
+        $usuario->token_activacion = $token;
+        $usuario->save();
+        Mail::to($usuario->email)->send(new InvitacionUsuario($usuario, $token));
+
 
         return response()->json([
             'mensaje' => 'Usuario invitado correctamente.',
@@ -73,4 +81,6 @@ class EmpresaController extends Controller
             'password_temporal' => $passwordTemporal
         ], 201);
     }
+
+    
 }

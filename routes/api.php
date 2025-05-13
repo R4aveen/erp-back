@@ -22,7 +22,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/activar-cuenta', [AuthController::class, 'activarCuenta']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
-
+    Route::get('/activar', [AuthController::class, 'verificarTokenActivacion']);
+    
     // Jerarquía de empresa
     Route::get('/empresas', [EmpresaController::class, 'index']);
     Route::get('/empresas/{empresa}/subempresas', [EmpresaController::class, 'subempresas']);
