@@ -11,43 +11,56 @@ class RolesPermisosSeeder extends Seeder
 {
     public function run(): void
     {
-        // Permisos base
-        $set = [
-            'crear_producto',
-            'editar_producto',
-            'eliminar_producto',
-            'ver_usuarios',
-            'invitar_usuario',
-            'crear_subempresa',
-            'crear_sucursal' 
+        // 1) Set de permisos CRUD + wildcards
+        $permisosClaves = [
+            'super_admin',       // permiso máximo, no removible
+            // Wildcards por recurso
+            'empresa:*',         // cubre create,view,update,delete
+            'subempresa:*',
+            'sucursal:*',
+            'usuario:*',
+            'cotizacion:*',
+            'documento:*',
+            'producto:*',
+            // (Opcional puedes listar todos los específicos si lo deseas)
         ];
 
-        $permisos = collect($set)->map(fn ($c) =>
+        // 2) Seed de Permisos
+        foreach ($permisosClaves as $clave) {
             Permiso::firstOrCreate(
-                ['clave' => $c],
-                ['descripcion' => Str::title(str_replace('_', ' ', $c))]
-            )
-        );
+                ['clave'       => $clave],
+                ['descripcion' => Str::title(str_replace([':','_','*'], [' ', ' ', 'Todos'], $clave))]
+            );
+        }
 
-        // Roles
+        // 3) Map clave→id
+        $mapPermisos = Permiso::pluck('id', 'clave');
+
+        // 4) Roles “fijos”
         $admin   = Rol::firstOrCreate(['nombre' => 'admin']);
         $gerente = Rol::firstOrCreate(['nombre' => 'gerente']);
         $tecnico = Rol::firstOrCreate(['nombre' => 'tecnico']);
 
-        // Asignación
-        $admin->permisos()->sync($permisos->pluck('id'));
+        // 5a) Admin = TODOS los permisos
+        $admin->permisos()->sync($mapPermisos->values());
 
-
+        // 5b) Gerente = sólo wildcards de lectura/gestión
         $gerente->permisos()->sync(
-            $permisos->whereIn('clave', [
-                'crear_producto', 'editar_producto',
-                'ver_usuarios', 'invitar_usuario'
-            ])->pluck('id')
+            $mapPermisos->only([
+                'empresa:*',
+                'subempresa:*',
+                'sucursal:*',
+                'usuario:*',
+                'cotizacion:*',
+                'documento:*',
+            ])->values()
         );
 
+        // 5c) Técnico = sólo productos
         $tecnico->permisos()->sync(
-            $permisos->whereIn('clave', ['crear_producto', 'editar_producto'])
-                     ->pluck('id')
+            $mapPermisos->only([
+                'producto:*',
+            ])->values()
         );
     }
 }

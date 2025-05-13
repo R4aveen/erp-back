@@ -78,12 +78,19 @@ class AuthController extends Controller
 
     public function perfil()
     {
-        return response()->json(Auth::user());
+        $user = Auth::user()->load(['rol.permisos', 'permisosDirectos']); 
+
+        $viaRol   = $user->rol->permisos->pluck('clave')->toArray();
+        $directos = $user->permisosDirectos->pluck('clave')->toArray();
+
+        return response()->json([
+            'id'        => $user->id,
+            'nombre'    => $user->nombre,
+            'rol'       => $user->rol->nombre,    // o slug si lo tienes
+            'permisos'  => array_values(array_unique(array_merge($viaRol, $directos))),
+            // …otros campos que quieras enviar…
+        ]);
     }
 
-    public function logout()
-    {
-        JWTAuth::invalidate(JWTAuth::getToken());
-        return response()->json(['mensaje' => 'Sesión cerrada']);
-    }
+
 }

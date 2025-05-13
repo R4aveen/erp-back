@@ -26,7 +26,11 @@ class Usuario extends Authenticatable implements JWTSubject
 
     /* === Permisos === */
     public function permisos()  { return $this->belongsToMany(Permiso::class, 'permiso_usuario'); }
-
+    public function permisosDirectos()
+    {
+        return $this->belongsToMany(Permiso::class, 'usuario_permiso')
+                    ->withTimestamps();
+    }
     /** ¿El usuario posee X permiso (directo o por algún rol)? */
    public function tienePermiso(string $clave): bool
     {

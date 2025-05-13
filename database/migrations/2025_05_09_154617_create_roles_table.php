@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
+            // Nuevo campo slug para identificar el rol de forma inmutable
+            $table->string('slug')->unique();
+            // Nombre para mostrar en UI y descripciones
             $table->string('nombre');
             $table->string('descripcion')->nullable();
             $table->timestamps();
         });
-
     }
 
     /**

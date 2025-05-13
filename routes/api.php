@@ -6,6 +6,7 @@ use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\SubempresaController;
+use App\Http\Controllers\UserPermissionController;
 use App\Http\Middleware\VerificarAccesoEmpresa;
 
 // Rutas públicas
@@ -93,4 +94,14 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/usuarios', [EmpresaController::class, 'listarUsuarios']);
         Route::post('/producto', [ProductoController::class, 'crear']);
     });
+
+    // Rutas de permisos
+    Route::prefix('usuarios/{usuario}/permisos')
+        ->middleware(['auth:api','checkPermiso:usuario:update'])
+        ->group(function(){
+            Route::get('/', [UserPermissionController::class,'index']);
+            Route::post('/', [UserPermissionController::class,'store']);
+            Route::delete('/{permiso}', [UserPermissionController::class,'destroy']);
+    });
+
 });

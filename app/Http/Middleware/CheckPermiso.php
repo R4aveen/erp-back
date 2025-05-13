@@ -8,11 +8,22 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckPermiso
 {
-    public function handle($request, Closure $next, string $permiso)
+    public function handle(Request $request, Closure $next, string $clavePermiso)
     {
-        if (! Auth::user()?->tienePermiso($permiso)) {
-            return response()->json(['error' => 'Sin permiso'], 403);
+        $user = Auth::user();
+
+        // 1) Si el usuario tiene super_admin, dejamos pasar TODO
+        if ($user && $user->permisos->pluck('clave')->contains('super_admin')) {
+            return $next($request);
         }
+
+        // 2) Si no, chequeamos el permiso específico
+        if (! $user || ! $user->permisos->pluck('clave')->contains($clavePermiso)) {
+            return response()->json(['error' => 'Sin permiso.'], 403);
+        }
+
         return $next($request);
     }
+
+
 }

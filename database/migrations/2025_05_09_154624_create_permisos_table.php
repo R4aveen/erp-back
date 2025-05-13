@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Permiso;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,10 @@ return new class extends Migration
             $table->string('descripcion')->nullable();
             $table->timestamps();
         });
+        Permiso::firstOrCreate(
+            ['clave'=>'super_admin'],
+            ['descripcion'=>'Acceso ilimitado (no removible)']
+            );
 
     }
 
