@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('personalizacion_usuarios', function (Blueprint $table) {
-            //
+            $table->renameColumn('usuario', 'usuario_id');
         });
+
     }
 
     /**
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('personalizacion_usuarios', function (Blueprint $table) {
-            //
+            $table->renameColumn('usuario_id', 'usuario');
         });
+
     }
 };
