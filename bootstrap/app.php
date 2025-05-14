@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth'     => \App\Http\Middleware\Authenticate::class,
             'permiso'  => \App\Http\Middleware\CheckPermiso::class,
             'rol'      => \App\Http\Middleware\CheckRol::class,
-            'verificar.activacion' => \App\Http\Middleware\VerificarActivacion::class, // 👈 Agregado aquí
+            'verificar.activacion' => \App\Http\Middleware\VerificarActivacion::class, 
         ]);
     })
 

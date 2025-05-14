@@ -8,21 +8,46 @@ use Illuminate\Http\Request;
 
 class SucursalController extends Controller
 {
-    public function usuarios($id)
+    public function index()
     {
-        $sucursal = Sucursal::with('usuarios')->findOrFail($id);
+        return Sucursal::with('subempresa')->get();
+    }
+
+    public function store(Request $req, Subempresa $subempresa)
+    {
+        $data = $req->validate([
+            'nombre'    => 'required|string|max:255',
+            'direccion' => 'nullable|string|max:255',
+        ]);
+
+        $suc = $subempresa->sucursales()->create($data);
+        return response()->json($suc, 201);
+    }
+
+    public function show(Sucursal $sucursal)
+    {
+        return $sucursal->load('usuarios');
+    }
+
+    public function update(Request $req, Sucursal $sucursal)
+    {
+        $data = $req->validate([
+            'nombre'    => 'sometimes|required|string|max:255',
+            'direccion' => 'nullable|string|max:255',
+        ]);
+
+        $sucursal->update($data);
         return response()->json($sucursal);
     }
-    public function store(Request $request, Subempresa $subempresa)
-        {
-            $validated = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'direccion' => 'nullable|string|max:255',
-            ]);
 
-            $sucursal = $subempresa->sucursales()->create($validated);
+    public function destroy(Sucursal $sucursal)
+    {
+        $sucursal->delete();
+        return response()->json(['mensaje' => 'Sucursal eliminada.']);
+    }
 
-            return response()->json($sucursal, 201);
-        }
-
+    public function usuarios(Sucursal $sucursal)
+    {
+        return response()->json($sucursal->load('usuarios'));
+    }
 }

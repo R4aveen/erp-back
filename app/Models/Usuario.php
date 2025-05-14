@@ -4,45 +4,51 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Rol;
+use App\Models\Permiso;
+use App\Models\PersonalizacionUsuario;
 
 class Usuario extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable;
-    protected $table = 'usuarios';
-    protected $fillable = ['nombre', 'email', 'password', 'activado'];
-    protected $hidden   = ['password'];
+    use Notifiable;
 
-    /* === JWT === */
+    protected $table    = 'usuarios';
+    protected $fillable = ['nombre', 'email', 'password', 'activado', 'token_activacion'];
+    protected $hidden   = ['password', 'token_activacion'];
+
     public function getJWTIdentifier() { return $this->getKey(); }
     public function getJWTCustomClaims(): array { return []; }
 
-    /* === Relaciones jerárquicas === */
-    public function empresas()  { return $this->belongsToMany(Empresa::class,   'empresa_usuario_rol'); }
-    public function roles()     { return $this->belongsToMany(Rol::class,      'empresa_usuario_rol'); }
-    public function sucursales(){ return $this->belongsToMany(Sucursal::class, 'sucursal_usuario');    }
-    public function subempresa(){ return $this->belongsTo(Subempresa::class); }   // si existe clave foránea directa
+    public function roles()
+    {
+        return $this->belongsToMany(Rol::class, 'empresa_usuario_rol', 'usuario_id', 'rol_id')->withTimestamps();
+    }
 
-    /* === Permisos === */
-    public function permisos()  { return $this->belongsToMany(Permiso::class, 'permiso_usuario'); }
     public function permisosDirectos()
     {
-        return $this->belongsToMany(Permiso::class, 'usuario_permiso')
-                    ->withTimestamps();
+        return $this->belongsToMany(Permiso::class, 'permiso_usuario', 'usuario_id', 'permiso_id')->withTimestamps();
     }
-    /** ¿El usuario posee X permiso (directo o por algún rol)? */
-   public function tienePermiso(string $clave): bool
+
+    public function personalizacion()
     {
-        $this->loadMissing(['permisos', 'roles.permisos']);
-
-        if ($this->permisos->pluck('clave')->contains($clave)) {
-            return true;
-        }
-
-        return $this->roles->flatMap->permisos
-                            ->pluck('clave')
-                            ->contains($clave);
+        return $this->hasOne(PersonalizacionUsuario::class, 'usuario', 'id');
     }
 
+    public function permisos(): array
+    {
+        $this->loadMissing(['roles.permisos', 'permisosDirectos']);
+
+        $viaRol = $this->roles->flatMap(fn($rol) => $rol->permisos)->pluck('clave')->toArray();
+        $directos = $this->permisosDirectos->pluck('clave')->toArray();
+
+        return array_values(array_unique(array_merge($viaRol, $directos)));
+    }
+
+    public function tienePermiso(string $clave): bool
+    {
+        $perms = $this->permisos();
+        return in_array($clave, $perms) || in_array(explode(':', $clave)[0] . ':*', $perms);
+    }
 }
+

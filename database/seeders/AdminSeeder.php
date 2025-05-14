@@ -3,37 +3,54 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Empresa;
 use App\Models\Rol;
+use App\Models\Permiso;
+use App\Models\Usuario;
 
 class AdminSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Crear empresa madre
-        $empresa = Empresa::create([
-            'nombre' => 'Tr3s Marías SPA',
-            'rut' => '76381234-9',
-            'descripcion' => 'Empresa principal del ERP',
-        ]);
+        // 1) Empresa matriz
+        $empresa = Empresa::firstOrCreate(
+            ['nombre' => 'Tr3s Marías SPA'],
+            ['rut' => '76381234-9', 'descripcion' => 'Empresa matriz del ERP']
+        );
 
-        // Crear rol Admin
-        $rol = Rol::create([
-            'nombre' => 'Admin',
-            'descripcion' => 'Administrador del sistema con acceso total',
-        ]);
+        // 2) Rol super_admin
+        $rol = Rol::firstOrCreate(
+            ['slug' => 'super_admin'],
+            ['nombre' => 'Super Administrador', 'descripcion' => 'Acceso total al sistema']
+        );
 
-        // Crear usuario administrador
-        $admin = Usuario::create([
-            'nombre' => 'Administrador General',
-            'email' => 'admin@tresmarias.cl',
-            'password' => bcrypt('admin123'), 
-        ]);
+        // 2b) Asegurar permiso super_admin
+        $permSuper = Permiso::firstOrCreate(
+            ['clave' => 'super_admin'],
+            ['descripcion' => 'Acceso total al sistema']
+        );
 
-        // Asociar a la empresa y rol
-        $admin->empresas()->attach($empresa->id, ['rol_id' => $rol->id]);
+        // 2c) Asignar permiso al rol
+        $rol->permisos()->syncWithoutDetaching([$permSuper->id]);
 
-        echo "Usuario admin creado: admin@tresmarias.cl / admin123\n";
+        // 3) Usuario
+        $user = Usuario::firstOrCreate(
+            ['email' => 'root@tresmarias.cl'],
+            [
+                'nombre'           => 'Root Administrator',
+                'password'         => Hash::make('root1234'),
+                'activado'         => true,
+                'token_activacion' => null,
+            ]
+        );
+
+        // 4) Asociación User ↔ Empresa ↔ Rol
+        $user->empresasRoles()->updateOrCreate(
+            ['empresa_id' => $empresa->id],
+            ['rol_id'     => $rol->id]
+        );
+
+        $this->command->info("✅ Empresa y super-admin creados: root@tresmarias.cl / root1234");
     }
 }

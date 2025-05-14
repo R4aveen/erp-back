@@ -13,9 +13,11 @@ class CheckPermiso
         $user = Auth::user();
 
         // 1) Si el usuario tiene super_admin, dejamos pasar TODO
-        if ($user && $user->permisos->pluck('clave')->contains('super_admin')) {
+        // en handle():
+        if ($user->tienePermiso($clavePermiso) || in_array('super_admin',$user->permisos())) {
             return $next($request);
         }
+
 
         // 2) Si no, chequeamos el permiso específico
         if (! $user || ! $user->permisos->pluck('clave')->contains($clavePermiso)) {

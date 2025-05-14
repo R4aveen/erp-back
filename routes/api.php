@@ -16,9 +16,42 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rutas protegidas con JWT
 Route::middleware('auth:api')->group(function () {
 
+        // --- EMPRESAS CRUD ---
+    Route::get   ('/empresas',                    [EmpresaController::class, 'index']);
+    Route::post  ('/empresas',                    [EmpresaController::class, 'store'])->middleware('permiso:empresa:create');
+    Route::get   ('/empresas/{empresa}',         [EmpresaController::class, 'show']);
+    Route::put   ('/empresas/{empresa}',         [EmpresaController::class, 'update'])->middleware('permiso:empresa:update');
+    Route::delete('/empresas/{empresa}',         [EmpresaController::class, 'destroy'])->middleware('permiso:empresa:delete');
+
+    // Jerarquía anidada existente
+    Route::get('/empresas/{empresa}/subempresas', [EmpresaController::class, 'subempresas']);
+    Route::get('/empresas/{empresa}/usuarios',    [EmpresaController::class, 'listarUsuarios']);
+
+    // --- SUBEMPRESAS CRUD ---
+    Route::get   ('/subempresas',                 [SubempresaController::class, 'index']);
+    Route::post  ('/empresas/{empresa}/subempresas',[SubempresaController::class, 'store'])->middleware('permiso:subempresa:create');
+    Route::get   ('/subempresas/{subempresa}',    [SubempresaController::class, 'show']);
+    Route::put   ('/subempresas/{subempresa}',    [SubempresaController::class, 'update'])->middleware('permiso:subempresa:update');
+    Route::delete('/subempresas/{subempresa}',    [SubempresaController::class, 'destroy'])->middleware('permiso:subempresa:delete');
+    Route::get   ('/subempresas/{subempresa}/sucursales',[SubempresaController::class, 'sucursales']);
+
+    // --- SUCURSALES CRUD ---
+    Route::get   ('/sucursales',                  [SucursalController::class, 'index']);
+    Route::post  ('/subempresas/{subempresa}/sucursales',[SucursalController::class, 'store'])->middleware('permiso:sucursal:create');
+    Route::get   ('/sucursales/{sucursal}',       [SucursalController::class, 'show']);
+    Route::put   ('/sucursales/{sucursal}',       [SucursalController::class, 'update'])->middleware('permiso:sucursal:update');
+    Route::delete('/sucursales/{sucursal}',       [SucursalController::class, 'destroy'])->middleware('permiso:sucursal:delete');
+    Route::get   ('/sucursales/{sucursal}/usuarios',[SucursalController::class, 'usuarios']);
+
+    // Personalizacion del usuario
+
     // Usuario autenticado
     Route::get('/perfil', [AuthController::class, 'perfil'])
             ->middleware('verificar.activacion');
+    
+    Route::get('/usuario/personalizacion',[AuthController::class, 'obtenerPersonalizacion']);
+    Route::put('/usuario/personalizacion', [AuthController::class, 'actualizarPersonalizacion']);
+
 
     Route::post('/activar-cuenta', [AuthController::class, 'activarCuenta']);
 

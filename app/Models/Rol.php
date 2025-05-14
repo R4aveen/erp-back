@@ -1,20 +1,12 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Rol extends Model
 {
+    protected $fillable = ['slug','nombre','descripcion'];
     protected $table = 'roles';
-
-    // Agregamos slug y descripcion a fillable
-    protected $fillable = [
-        'slug',
-        'nombre',
-        'descripcion',
-    ];
-
     public function permisos()
     {
         return $this->belongsToMany(Permiso::class, 'permiso_rol');
@@ -22,6 +14,13 @@ class Rol extends Model
 
     public function usuarios()
     {
-        return $this->hasMany(Usuario::class);
+        return $this->hasManyThrough(
+            Usuario::class,
+            EmpresaUsuarioRol::class,
+            'rol_id',
+            'id',
+            'id',
+            'usuario_id'
+        );
     }
 }

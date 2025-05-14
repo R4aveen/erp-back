@@ -2,38 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\InvitacionUsuario;
 use App\Models\Empresa;
-use App\Models\Usuario;
-use App\Models\Rol;
-use App\Models\Sucursal;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use App\Models\Usuario;
+use App\Mail\InvitacionUsuario;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Hash;
 class EmpresaController extends Controller
 {
-    // Lista todas las empresas (solo para admins o gerentes globales)
     public function index()
     {
         return Empresa::all();
     }
 
-    // Devuelve una empresa con sus subempresas y sucursales (GET /empresas/{id}/subempresas)
-    public function subempresas($id)
+    public function store(Request $req)
     {
-        $empresa = Empresa::with('subempresas.sucursales')->findOrFail($id);
+        $data = $req->validate([
+            'nombre'      => 'required|string|max:255',
+            'rut'         => 'required|string|unique:empresas,rut',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        $empresa = Empresa::create($data);
+        return response()->json($empresa, 201);
+    }
+
+    public function show(Empresa $empresa)
+    {
+        return $empresa->load('subempresas.sucursales');
+    }
+
+    public function update(Request $req, Empresa $empresa)
+    {
+        $data = $req->validate([
+            'nombre'      => 'sometimes|required|string|max:255',
+            'rut'         => "sometimes|required|string|unique:empresas,rut,{$empresa->id}",
+            'descripcion' => 'nullable|string',
+        ]);
+
+        $empresa->update($data);
         return response()->json($empresa);
     }
 
-    // Devuelve una empresa con todas sus subempresas, sucursales y usuarios (GET /empresa/{id}/usuarios)
-    public function listarUsuarios($id)
+    public function destroy(Empresa $empresa)
     {
-        $empresa = Empresa::with('subempresas.sucursales.usuarios')->findOrFail($id);
-        return response()->json($empresa);
+        $empresa->delete();
+        return response()->json(['mensaje' => 'Empresa eliminada.']);
     }
+
+    // ya tenías estos:
+    public function subempresas(Empresa $empresa)
+    {
+        return response()->json($empresa->load('subempresas.sucursales'));
+    }
+
+    public function listarUsuarios(Empresa $empresa)
+    {
+        return response()->json($empresa->load('subempresas.sucursales.usuarios'));
+    }
+
 
     public function invitar(Request $request, $empresaId)
     {
@@ -81,6 +110,7 @@ class EmpresaController extends Controller
             'password_temporal' => $passwordTemporal
         ], 201);
     }
+    
 
     
 }

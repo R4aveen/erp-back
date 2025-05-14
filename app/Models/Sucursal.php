@@ -8,7 +8,7 @@ class Sucursal extends Model
 {
     protected $table = 'sucursales';
     
-    protected $fillable = ['nombre', 'direccion', 'subempresa_id'];
+    protected $fillable = ['nombre','direccion','subempresa_id'];
 
     public function subempresa() {
         return $this->belongsTo(Subempresa::class);

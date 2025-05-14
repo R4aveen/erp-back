@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subempresa extends Model
 {
+    
     protected $fillable = [
         'nombre',
         'slug',
