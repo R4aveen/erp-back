@@ -1,0 +1,11 @@
+models:
+    Empleado: {  }
+    Empresa: { nombre: string, rut: 'string nullable', descripcion: 'text nullable' }
+    EmpresaUsuarioRol: { empresa_id: 'biginteger unsigned', usuario_id: 'biginteger unsigned', rol_id: 'biginteger unsigned' }
+    Permiso: { clave: string, descripcion: 'text nullable' }
+    PersonalizacionUsuario: { usuario: 'biginteger unsigned', tema: 'string:1 default:3', font_size: 'integer default:14' }
+    Producto: {  }
+    Rol: { slug: string, nombre: string, descripcion: 'text nullable' }
+    Subempresa: { empresa_id: 'biginteger unsigned', nombre: string, slug: string, descripcion: 'text nullable' }
+    Sucursal: { subempresa_id: 'biginteger unsigned', nombre: string, direccion: 'string nullable', descripcion: 'text nullable' }
+    Usuario: { nombre: string, email: string, password: string, activado: boolean, token_activacion: 'char:36 nullable' }

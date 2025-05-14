@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Rol;
 use App\Models\Permiso;
 use App\Models\PersonalizacionUsuario;
-
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Usuario extends Authenticatable implements JWTSubject
 {
     use Notifiable;
@@ -49,6 +49,23 @@ class Usuario extends Authenticatable implements JWTSubject
     {
         $perms = $this->permisos();
         return in_array($clave, $perms) || in_array(explode(':', $clave)[0] . ':*', $perms);
+    }
+
+    public function empleado()
+    {
+        return $this->hasOne(Empleado::class);
+    }
+
+    public function empresasRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Empresa::class,              // el modelo relacionado
+            'empresa_usuario_rol',       // nombre de la tabla pivote
+            'usuario_id',                // FK de este modelo en la pivote
+            'empresa_id'                 // FK del modelo Empresa en la pivote
+        )
+        ->withPivot('rol_id')           // para poder leer/escribir el rol
+        ->using(\App\Models\EmpresaUsuarioRol::class); // opcional si usas un Pivot custom
     }
 }
 

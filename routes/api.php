@@ -132,9 +132,10 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('usuarios/{usuario}/permisos')
         ->middleware(['auth:api','checkPermiso:usuario:update'])
         ->group(function(){
-            Route::get('/', [UserPermissionController::class,'index']);
-            Route::post('/', [UserPermissionController::class,'store']);
+            Route::get('/',    [UserPermissionController::class,'index']);
+            Route::post('/',   [UserPermissionController::class,'store']);
             Route::delete('/{permiso}', [UserPermissionController::class,'destroy']);
     });
+
 
 });
