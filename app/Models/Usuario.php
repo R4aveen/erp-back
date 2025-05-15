@@ -9,63 +9,66 @@ use App\Models\Rol;
 use App\Models\Permiso;
 use App\Models\PersonalizacionUsuario;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+
+
 class Usuario extends Authenticatable implements JWTSubject
-{
-    use Notifiable;
-
-    protected $table    = 'usuarios';
-    protected $fillable = ['nombre', 'email', 'password', 'activado', 'token_activacion'];
-    protected $hidden   = ['password', 'token_activacion'];
-
-    public function getJWTIdentifier() { return $this->getKey(); }
-    public function getJWTCustomClaims(): array { return []; }
-
-    public function roles()
     {
-        return $this->belongsToMany(Rol::class, 'empresa_usuario_rol', 'usuario_id', 'rol_id')->withTimestamps();
+        use Notifiable;
+
+        protected $table    = 'usuarios';
+        protected $fillable = ['nombre', 'email', 'password', 'activado', 'token_activacion'];
+        protected $hidden   = ['password', 'token_activacion'];
+
+        public function getJWTIdentifier() { return $this->getKey(); }
+        public function getJWTCustomClaims(): array { return []; }
+
+        public function roles()
+        {
+            return $this->belongsToMany(Rol::class, 'empresa_usuario_rol', 'usuario_id', 'rol_id')->withTimestamps();
+        }
+
+        public function permisosDirectos()
+        {
+            return $this->belongsToMany(Permiso::class, 'permiso_usuario', 'usuario_id', 'permiso_id')->withTimestamps();
+        }
+
+        public function personalizacion()
+        {
+            return $this->hasOne(PersonalizacionUsuario::class, 'usuario_id');
+        }
+
+        public function permisos(): array
+        {
+            $this->loadMissing(['roles.permisos', 'permisosDirectos']);
+
+            $viaRol = $this->roles->flatMap(fn($rol) => $rol->permisos)->pluck('clave')->toArray();
+            $directos = $this->permisosDirectos->pluck('clave')->toArray();
+
+            return array_values(array_unique(array_merge($viaRol, $directos)));
+        }
+
+        public function tienePermiso(string $clave): bool
+        {
+            $perms = $this->permisos();
+            return in_array($clave, $perms) || in_array(explode(':', $clave)[0] . ':*', $perms);
+        }
+
+        public function empleado()
+        {
+            return $this->hasOne(Empleado::class);
+        }
+
+        public function empresasRoles(): BelongsToMany
+        {
+            return $this->belongsToMany(
+                Empresa::class,              // el modelo relacionado
+                'empresa_usuario_rol',       // nombre de la tabla pivote
+                'usuario_id',                // FK de este modelo en la pivote
+                'empresa_id'                 // FK del modelo Empresa en la pivote
+            )
+            ->withPivot('rol_id')           // para poder leer/escribir el rol
+            ->using(\App\Models\EmpresaUsuarioRol::class); // opcional si usas un Pivot custom
+        }
     }
-
-    public function permisosDirectos()
-    {
-        return $this->belongsToMany(Permiso::class, 'permiso_usuario', 'usuario_id', 'permiso_id')->withTimestamps();
-    }
-
-    public function personalizacion()
-    {
-        return $this->hasOne(PersonalizacionUsuario::class, 'usuario_id');
-    }
-
-    public function permisos(): array
-    {
-        $this->loadMissing(['roles.permisos', 'permisosDirectos']);
-
-        $viaRol = $this->roles->flatMap(fn($rol) => $rol->permisos)->pluck('clave')->toArray();
-        $directos = $this->permisosDirectos->pluck('clave')->toArray();
-
-        return array_values(array_unique(array_merge($viaRol, $directos)));
-    }
-
-    public function tienePermiso(string $clave): bool
-    {
-        $perms = $this->permisos();
-        return in_array($clave, $perms) || in_array(explode(':', $clave)[0] . ':*', $perms);
-    }
-
-    public function empleado()
-    {
-        return $this->hasOne(Empleado::class);
-    }
-
-    public function empresasRoles(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Empresa::class,              // el modelo relacionado
-            'empresa_usuario_rol',       // nombre de la tabla pivote
-            'usuario_id',                // FK de este modelo en la pivote
-            'empresa_id'                 // FK del modelo Empresa en la pivote
-        )
-        ->withPivot('rol_id')           // para poder leer/escribir el rol
-        ->using(\App\Models\EmpresaUsuarioRol::class); // opcional si usas un Pivot custom
-    }
-}
 

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\RolPermissionController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\SubempresaController;
 use App\Http\Controllers\UserPermissionController;
@@ -15,6 +17,18 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Rutas protegidas con JWT
 Route::middleware('auth:api')->group(function () {
+
+        // CRUD de roles
+    Route::get('roles',      [RolController::class, 'index'])->middleware('checkPermiso:rol:read');
+    Route::post('roles',     [RolController::class, 'store'])->middleware('checkPermiso:rol:create');
+    Route::get('roles/{rol}',[RolController::class, 'show'])->middleware('checkPermiso:rol:read');
+    Route::patch('roles/{rol}',[RolController::class, 'update'])->middleware('checkPermiso:rol:update');
+    Route::delete('roles/{rol}',[RolController::class, 'destroy'])->middleware('checkPermiso:rol:delete');
+
+    // Gestión dinámica de permisos en un rol
+    Route::get('roles/{rol}/permisos',          [RolPermissionController::class, 'index'])->middleware('checkPermiso:rol:read');
+    Route::post('roles/{rol}/permisos',         [RolPermissionController::class, 'store'])->middleware('checkPermiso:rol:assign');
+    Route::delete('roles/{rol}/permisos/{clave}',[RolPermissionController::class, 'destroy'])->middleware('checkPermiso:rol:assign');
 
         // --- EMPRESAS CRUD ---
     Route::get   ('/empresas',                    [EmpresaController::class, 'index']);
