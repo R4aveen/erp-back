@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSucursalRequest;
+use App\Http\Requests\UpdateSucursalRequest;
 use App\Models\Subempresa;
 use App\Models\Sucursal;
 use Illuminate\Http\Request;
@@ -13,13 +15,9 @@ class SucursalController extends Controller
         return Sucursal::with('subempresa')->get();
     }
 
-    public function store(Request $req, Subempresa $subempresa)
+    public function store(StoreSucursalRequest $req, Subempresa $subempresa)
     {
-        $data = $req->validate([
-            'nombre'    => 'required|string|max:255',
-            'direccion' => 'nullable|string|max:255',
-        ]);
-
+        $data = $req->validate();
         $suc = $subempresa->sucursales()->create($data);
         return response()->json($suc, 201);
     }
@@ -29,13 +27,9 @@ class SucursalController extends Controller
         return $sucursal->load('usuarios');
     }
 
-    public function update(Request $req, Sucursal $sucursal)
+    public function update(UpdateSucursalRequest $req, Sucursal $sucursal)
     {
-        $data = $req->validate([
-            'nombre'    => 'sometimes|required|string|max:255',
-            'direccion' => 'nullable|string|max:255',
-        ]);
-
+        $data = $req->validate();
         $sucursal->update($data);
         return response()->json($sucursal);
     }

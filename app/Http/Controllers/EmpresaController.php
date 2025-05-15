@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEmpresaRequest;
+use App\Http\Requests\UpdateEmpresaRequest;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -17,14 +19,9 @@ class EmpresaController extends Controller
         return Empresa::all();
     }
 
-    public function store(Request $req)
+    public function store(StoreEmpresaRequest $request)
     {
-        $data = $req->validate([
-            'nombre'      => 'required|string|max:255',
-            'rut'         => 'required|string|unique:empresas,rut',
-            'descripcion' => 'nullable|string',
-        ]);
-
+        $data = $request->validated();
         $empresa = Empresa::create($data);
         return response()->json($empresa, 201);
     }
@@ -34,14 +31,9 @@ class EmpresaController extends Controller
         return $empresa->load('subempresas.sucursales');
     }
 
-    public function update(Request $req, Empresa $empresa)
+    public function update(UpdateEmpresaRequest $request, Empresa $empresa)
     {
-        $data = $req->validate([
-            'nombre'      => 'sometimes|required|string|max:255',
-            'rut'         => "sometimes|required|string|unique:empresas,rut,{$empresa->id}",
-            'descripcion' => 'nullable|string',
-        ]);
-
+        $data = $request->validated();
         $empresa->update($data);
         return response()->json($empresa);
     }

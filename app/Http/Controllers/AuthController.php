@@ -3,6 +3,9 @@
 // app/Http/Controllers/AuthController.php
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActivateAccountRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,18 +18,14 @@ class AuthController extends Controller
     /**
      * Registro de un nuevo usuario y generación de JWT.
      */
-    public function registrar(Request $request)
+    public function registrar(RegisterUserRequest $request)
     {
-        $request->validate([
-            'nombre'   => 'required|string|max:255',
-            'email'    => 'required|email|unique:usuarios',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        $data = $request->validated();
 
         $usuario = Usuario::create([
-            'nombre'   => $request->nombre,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'nombre'   => $data['nombre'],
+            'email'    => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
         $token = JWTAuth::fromUser($usuario);
@@ -37,14 +36,9 @@ class AuthController extends Controller
     /**
      * Autenticación y emisión de JWT.
      */
-    public function login(Request $request)
+     public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validated();
 
         if (! $token = JWTAuth::attempt($credentials)) {
             return response()->json(['error' => 'Credenciales inválidas'], 401);
@@ -65,8 +59,9 @@ class AuthController extends Controller
     /**
      * Verificación de token de activación.
      */
-    public function verificarTokenActivacion(Request $request)
+     public function verificarTokenActivacion(Request $request)
     {
+        // éste puede quedarse con Request porque usa query()
         $usuario = Usuario::where('token_activacion', $request->query('token'))->first();
 
         if (! $usuario) {
@@ -83,24 +78,19 @@ class AuthController extends Controller
     /**
      * Activación de cuenta tras recibir token.
      */
-    public function activarCuenta(Request $request)
+    public function activarCuenta(ActivateAccountRequest $request)
     {
-        $request->validate([
-            'password' => 'required|confirmed|min:8',
-        ]);
-
         $user = Auth::user();
         if ($user->activado) {
             return response()->json(['mensaje' => 'Cuenta ya activada.'], 400);
         }
 
-        $user->password  = Hash::make($request->password);
-        $user->activado  = true;
+        $user->password = Hash::make($request->validated()['password']);
+        $user->activado = true;
         $user->save();
 
         return response()->json(['mensaje' => 'Cuenta activada correctamente.']);
     }
-
     /**
      * Devuelve perfil con permisos y personalización.
      */

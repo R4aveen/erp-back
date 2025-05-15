@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSubempresaRequest;
+use App\Http\Requests\UpdateSubempresaRequest;
 use App\Models\Empresa;
 use App\Models\Subempresa;
 use Illuminate\Http\Request;
@@ -13,14 +15,9 @@ class SubempresaController extends Controller
         return Subempresa::with('empresa')->get();
     }
 
-    public function store(Request $req, Empresa $empresa)
+    public function store(StoreSubempresaRequest $request, Empresa $empresa)
     {
-        $data = $req->validate([
-            'nombre'      => 'required|string|max:255',
-            'slug'        => 'required|string|unique:subempresas,slug',
-            'descripcion' => 'nullable|string',
-        ]);
-
+        $data = $request->validated();
         $sub = $empresa->subempresas()->create($data);
         return response()->json($sub, 201);
     }
@@ -30,18 +27,12 @@ class SubempresaController extends Controller
         return $subempresa->load('sucursales');
     }
 
-    public function update(Request $req, Subempresa $subempresa)
+    public function update(UpdateSubempresaRequest $request, Subempresa $subempresa)
     {
-        $data = $req->validate([
-            'nombre'      => 'sometimes|required|string|max:255',
-            'slug'        => "sometimes|required|string|unique:subempresas,slug,{$subempresa->id}",
-            'descripcion' => 'nullable|string',
-        ]);
-
+        $data = $request->validated();
         $subempresa->update($data);
         return response()->json($subempresa);
     }
-
     public function destroy(Subempresa $subempresa)
     {
         $subempresa->delete();
