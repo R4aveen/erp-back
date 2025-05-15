@@ -32,7 +32,7 @@ class Usuario extends Authenticatable implements JWTSubject
 
     public function personalizacion()
     {
-        return $this->hasOne(PersonalizacionUsuario::class, 'usuario', 'id');
+        return $this->hasOne(PersonalizacionUsuario::class, 'usuario_id');
     }
 
     public function permisos(): array

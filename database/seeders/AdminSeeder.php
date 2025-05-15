@@ -45,11 +45,23 @@ class AdminSeeder extends Seeder
             ]
         );
 
+
         // 4) Asociación User ↔ Empresa ↔ Rol
         $user->empresasRoles()->syncWithoutDetaching([
             $empresa->id => [ 'rol_id' => $rol->id ]
         ]);
 
         $this->command->info("✅ Empresa y super-admin creados: root@tresmarias.cl / root1234");
+        
+        $user->personalizacion()->updateOrCreate(
+            [],
+            [
+                'tema'      => '1',
+                'font_size' => 14,
+                // ya no pones 'empresa' ni 'sucursal_principal'
+            ]
+        );
+
     }
+    
 }

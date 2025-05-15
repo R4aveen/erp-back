@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
             $table->foreignId('empresa_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('sucursal_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('sucursal_id')->nullable()->constrained('sucursales')->onDelete('cascade');
             $table->string('cargo')->nullable();
             $table->date('fecha_ingreso')->nullable();
             $table->timestamps();
@@ -28,6 +28,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('empleados', function (Blueprint $table) {
+            $table->dropForeign(['sucursal_id']);
+        });
         Schema::dropIfExists('empleados');
+
     }
 };

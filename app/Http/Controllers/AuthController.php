@@ -105,74 +105,92 @@ class AuthController extends Controller
      * Devuelve perfil con permisos y personalización.
      */
     public function perfil(Request $request)
-    {
-        /** @var Usuario $user */
-        $user = Auth::user()->load(['roles.permisos', 'personalizacion']);
+        {
+            /** @var Usuario $user */
+            $user = Auth::user()->load(['roles.permisos', 'personalizacion']);
 
-        $permisos = $user->roles
-            ->flatMap(fn($rol) => $rol->permisos)
-            ->pluck('clave')
-            ->unique()
-            ->values()
-            ->toArray();
+            $permisos = $user->roles
+                ->flatMap(fn($rol) => $rol->permisos)
+                ->pluck('clave')
+                ->unique()
+                ->values()
+                ->toArray();
 
-        return response()->json([
-            'id'              => $user->id,
-            'nombre'          => $user->nombre,
-            'email'           => $user->email,
-            'permisos'        => $permisos,
-            'personalizacion' => $user->personalizacion ? [
-                'id'                => $user->personalizacion->id,
-                'fecha_creacion'    => $user->personalizacion->created_at->toDateTimeString(),
-                'fecha_modificacion'=> $user->personalizacion->updated_at->toDateTimeString(),
-                'tema'              => $user->personalizacion->tema,
-                'font_size'         => $user->personalizacion->font_size,
-                'usuario'           => $user->personalizacion->usuario,
-                'sucursal_principal'=> $user->personalizacion->sucursal_principal,
-                'empresa'           => $user->personalizacion->empresa,
-            ] : null,
-        ]);
-    }
+            return response()->json([
+                'id'              => $user->id,
+                'nombre'          => $user->nombre,
+                'email'           => $user->email,
+                'permisos'        => $permisos,
+                'personalizacion' => $user->personalizacion ? [
+                    'id'                => $user->personalizacion->id,
+                    'fecha_creacion'    => $user->personalizacion->created_at->toDateTimeString(),
+                    'fecha_modificacion'=> $user->personalizacion->updated_at->toDateTimeString(),
+                    'tema'              => $user->personalizacion->tema,
+                    'font_size'         => $user->personalizacion->font_size,
+                    'usuario'           => $user->personalizacion->usuario_id,
+                    'sucursal_principal'=> $user->personalizacion->sucursal_principal,
+                    'empresa'           => $user->personalizacion->empresa,
+                ] : null,
+            ]);
+        }
 
     /**
      * Endpoint independiente para obtener sólo la personalización.
      */
     public function obtenerPersonalizacion(Request $request)
-    {
-        $user = Auth::user()->load('personalizacion');
+        {
+            /** @var Usuario $user */
+            $user = Auth::user()->load('personalizacion');
 
-        if (! $user->personalizacion) {
-            return response()->json(null, 204);
+            if (! $user->personalizacion) {
+                return response()->json(null, 204);
+            }
+
+            $p = $user->personalizacion;
+            return response()->json([
+                'id'                => $p->id,
+                'fecha_creacion'    => $p->created_at->toDateTimeString(),
+                'fecha_modificacion'=> $p->updated_at->toDateTimeString(),
+                'tema'              => $p->tema,
+                'font_size'         => $p->font_size,
+                'usuario'           => $p->usuario_id,
+                'sucursal_principal'=> $p->sucursal_principal,
+                'empresa'           => $p->empresa,
+            ]);
         }
 
-        $p = $user->personalizacion;
-        return response()->json([
-            'id'                => $p->id,
-            'fecha_creacion'    => $p->created_at->toDateTimeString(),
-            'fecha_modificacion'=> $p->updated_at->toDateTimeString(),
-            'tema'              => $p->tema,
-            'font_size'         => $p->font_size,
-            'usuario'           => $p->usuario,
-            'sucursal_principal'=> $p->sucursal_principal,
-            'empresa'           => $p->empresa,
-        ]);
-    }
-    public function actualizarPersonalizacion(Request $request)
+   public function actualizarPersonalizacion(Request $request)
     {
+        // Si viene font_size como string, convertirlo a entero
+        if ($request->filled('font_size')) {
+            $request->merge(['font_size' => (int) $request->font_size]);
+        }
+
+        // Validación parcial: sólo valida lo que venga
         $data = $request->validate([
-            'tema'      => ['required', Rule::in(['1','2','3'])],
-            'font_size' => 'required|integer|min:8|max:72',
+            'tema'      => ['sometimes', Rule::in(['1','2','3'])],
+            'font_size' => 'sometimes|integer|min:8|max:72',
         ]);
 
         /** @var Usuario $user */
         $user = Auth::user();
 
-        // updateOrCreate: si no existe, lo crea; si existe, lo actualiza
+        // Obtener o crear la personalización con valores por defecto la primera vez
         $personalizacion = $user->personalizacion()
-            ->updateOrCreate(
-                ['usuario' => $user->id],
-                $data
+            ->firstOrNew(
+                ['usuario_id' => $user->id],
+                ['tema' => '1', 'font_size' => 16]
             );
+
+        // Asignar sólo los campos presentes en el request
+        if (array_key_exists('tema', $data)) {
+            $personalizacion->tema = $data['tema'];
+        }
+        if (array_key_exists('font_size', $data)) {
+            $personalizacion->font_size = $data['font_size'];
+        }
+
+        $personalizacion->save();
 
         return response()->json([
             'personalizacion' => [
@@ -181,7 +199,7 @@ class AuthController extends Controller
                 'fecha_modificacion'=> $personalizacion->updated_at->toDateTimeString(),
                 'tema'              => $personalizacion->tema,
                 'font_size'         => $personalizacion->font_size,
-                'usuario'           => $personalizacion->usuario,
+                'usuario'           => $personalizacion->usuario_id,
                 'sucursal_principal'=> $personalizacion->sucursal_principal,
                 'empresa'           => $personalizacion->empresa,
             ],
