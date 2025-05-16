@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DpaController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\RolController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\RolPermissionController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\SubempresaController;
 use App\Http\Controllers\UserPermissionController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Middleware\VerificarAccesoEmpresa;
 
 // Rutas públicas
@@ -30,6 +32,18 @@ Route::middleware('auth:api')->group(function () {
     Route::post('roles/{rol}/permisos',         [RolPermissionController::class, 'store'])->middleware('checkPermiso:rol:assign');
     Route::delete('roles/{rol}/permisos/{clave}',[RolPermissionController::class, 'destroy'])->middleware('checkPermiso:rol:assign');
     
+    // Listar todos los usuarios con sus roles y permisos
+    Route::get('usuarios', [UsuarioController::class, 'index'])->middleware('permiso:usuario:read');
+
+    Route::get('usuarios',[UsuarioController::class, 'index'])->middleware('permiso:usuario:read');
+
+    Route::prefix()->group(function () {
+        Route::get('regiones',                 [DpaController::class, 'regiones']);
+        Route::get('regiones/{region}/provincias', [DpaController::class, 'provincias']);
+        Route::get('provincias',               [DpaController::class, 'provincias']);
+        Route::get('provincias/{provincia}/comunas',  [DpaController::class, 'comunas']);
+        Route::get('comunas',                  [DpaController::class, 'comunas']);
+    });
 
         // --- EMPRESAS CRUD ---
     Route::get   ('/empresas',                    [EmpresaController::class, 'index']);

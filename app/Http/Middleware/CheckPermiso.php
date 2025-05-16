@@ -23,31 +23,26 @@ class CheckPermiso
             return response()->json(['error' => 'No autenticado.'], 401);
         }
 
-        // 1) Super-admin lo salta todo
+        // 1) Super-admin salta todo
         $user->loadMissing('roles');
         if ($user->roles->pluck('slug')->contains('super_admin')) {
             return $next($request);
         }
 
-        // 2) Colección de permisos del usuario (string[])
-        $clavesUsuario = $user->permisos();
+        // 2) Obtengo el array combinado
+        $clavesUsuario = $user->obtenerPermisos();
 
-        // 3) Recorro cada permiso que me hayan pasado por middleware
+        // 3) Compruebo cada permiso recibido
         foreach ($permisos as $clave) {
-            // 3.a) permiso exacto
             if (in_array($clave, $clavesUsuario, true)) {
                 return $next($request);
             }
-
-            // 3.b) comodín (recurso:*)
-            $parts   = explode(':', $clave, 2);
-            $recurso = $parts[0] ?? null;
-            if ($recurso && in_array($recurso . ':*', $clavesUsuario, true)) {
+            [$recurso] = explode(':', $clave, 2);
+            if ($recurso && in_array("$recurso:*", $clavesUsuario, true)) {
                 return $next($request);
             }
         }
 
-        // 4) Si no encontró ninguno
         return response()->json(['error' => 'Sin permiso.'], 403);
     }
 

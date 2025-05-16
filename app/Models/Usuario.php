@@ -25,12 +25,41 @@ class Usuario extends Authenticatable implements JWTSubject
 
         public function roles()
         {
-            return $this->belongsToMany(Rol::class, 'empresa_usuario_rol', 'usuario_id', 'rol_id')->withTimestamps();
+            return $this->belongsToMany(
+                Rol::class, 
+                'empresa_usuario_rol', 
+                'usuario_id', 
+                'rol_id'
+                )->withTimestamps();
         }
 
         public function permisosDirectos()
         {
-            return $this->belongsToMany(Permiso::class, 'permiso_usuario', 'usuario_id', 'permiso_id')->withTimestamps();
+            return $this->belongsToMany(
+                Permiso::class, 
+                'permiso_usuario', 
+                'usuario_id', 
+                'permiso_id'
+                )->withTimestamps();
+        }
+        
+        public function obtenerPermisos(): array
+        {
+            /// me aseguro de tener cargada las dos relaciones primeroo
+            $this->loadMissing((['roles.permisos', 'permisosDirectos']));
+
+            // 1) permisos por rol
+            $viaRol = $this->roles->flatMap(fn($rol) => $rol-> permisos->pluck('clave'))->toArray();
+
+           // 2) ahora los permisos directos
+           $directos = $this->permisosDirectos
+                ->pluck('clave')
+                ->toArray();
+
+            // 3) los junto y elimino duplicados
+            return array_values(array_unique(array_merge($viaRol, $directos)));
+            // $permisos = array_merge($viaRol, $directos);
+            // return array_values(array_unique($permisos));   
         }
 
         public function personalizacion()
