@@ -29,6 +29,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('roles/{rol}/permisos',          [RolPermissionController::class, 'index'])->middleware('checkPermiso:rol:read');
     Route::post('roles/{rol}/permisos',         [RolPermissionController::class, 'store'])->middleware('checkPermiso:rol:assign');
     Route::delete('roles/{rol}/permisos/{clave}',[RolPermissionController::class, 'destroy'])->middleware('checkPermiso:rol:assign');
+    
 
         // --- EMPRESAS CRUD ---
     Route::get   ('/empresas',                    [EmpresaController::class, 'index']);
