@@ -99,5 +99,39 @@ class Usuario extends Authenticatable implements JWTSubject
             ->withPivot('rol_id')           // para poder leer/escribir el rol
             ->using(\App\Models\EmpresaUsuarioRol::class); // opcional si usas un Pivot custom
         }
+
+        public function empresas()
+        {
+            return $this->belongsToMany(
+                Empresa::class,
+                'empresa_usuario_rol', // << aquí el nombre correcto de la tabla pivote
+                'usuario_id',          // FK usuario en esa tabla
+                'empresa_id'           // FK empresa en esa tabla
+            )
+            ->withPivot('rol_id')
+            ->withTimestamps();
+        }
+
+    // Si también necesitas las sucursales:
+    public function sucursales()
+    {
+        return $this->belongsToMany(
+            Sucursal::class,
+            'sucursal_usuario',
+            'usuario_id',
+            'sucursal_id'
+        )
+        ->withTimestamps();
     }
+    public function subempresas()
+    {
+        return $this->belongsToMany(
+            Subempresa::class,
+            'subempresa_usuario',
+            'usuario_id',
+            'subempresa_id'
+        )
+        ->withTimestamps();
+    }
+}
 

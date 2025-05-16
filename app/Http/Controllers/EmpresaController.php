@@ -102,7 +102,18 @@ class EmpresaController extends Controller
             'password_temporal' => $passwordTemporal
         ], 201);
     }
-    
+        
+    public function principal(Request $request)
+    {
+        $usuario = $request->user();
 
-    
+        // Usamos la relación que apunta al pivote correcto:
+        $empresa = $usuario
+            ->empresasRoles()                 // en lugar de ->empresas()
+            ->with('subempresas.sucursales')
+            ->first();
+
+        return response()->json($empresa);
+    }
+
 }

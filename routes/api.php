@@ -46,6 +46,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
         // --- EMPRESAS CRUD ---
+    Route::middleware('auth:api')->get('/empresa', [EmpresaController::class, 'principal']);    
     Route::get   ('/empresas',                    [EmpresaController::class, 'index']);
     Route::post  ('/empresas',                    [EmpresaController::class, 'store'])->middleware('permiso:empresa:create');
     Route::get   ('/empresas/{empresa}',         [EmpresaController::class, 'show']);
