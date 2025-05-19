@@ -96,40 +96,52 @@ class AuthController extends Controller
      */
     public function perfil(Request $request)
         {
-                /** @var Usuario $user */
-                $user = Auth::user()->load(['roles.permisos', 'personalizacion']);
+       // 1) Cargo al usuario con sus relaciones necesarias
+        $user = Auth::user()->load([
+            'roles.permisos',    // cada rol con su colección de permisos
+            'roles.features',    // cada rol con su colección de features
+            'personalizacion',   // personalización del usuario
+        ]);
 
-                $permisos = $user->roles
-                    ->flatMap(fn($rol) => $rol->permisos)
-                    ->pluck('clave')
-                    ->unique()
-                    ->values()
-                    ->toArray();
+        // 2) Aplano los permisos de todos los roles, pluckeo la clave,
+        //    quito duplicados y reindexo
+        $permisos = collect($user->roles)
+            ->flatMap->permisos      // trae la collection de permisos de cada rol
+            ->pluck('clave')         // extrae el campo 'clave'
+            ->unique()               // quita duplicados
+            ->values()               // reindexa de 0…n
+            ->toArray();
 
-                $featureClaves = $user->roles()
-                    ->flatMap(fn($rol) => $rol->features)
-                    ->pluck('clave')
-                    ->unique()
-                    ->values()
-                    ->toArray();
+        // 3) Lo mismo para los features
+        $features = collect($user->roles)
+            ->flatMap->features      // trae collection de features de cada rol
+            ->pluck('clave')
+            ->unique()
+            ->values()
+            ->toArray();
 
-                return response()->json([
-                    'id'              => $user->id,
-                    'nombre'          => $user->nombre,
-                    'email'           => $user->email,
-                    'permisos'        => $permisos,
-                    'features'        => $featureClaves,
-                    'personalizacion' => $user->personalizacion ? [
-                        'id'                => $user->personalizacion->id,
-                        'fecha_creacion'    => $user->personalizacion->created_at->toDateTimeString(),
-                        'fecha_modificacion'=> $user->personalizacion->updated_at->toDateTimeString(),
-                        'tema'              => $user->personalizacion->tema,
-                        'font_size'         => $user->personalizacion->font_size,
-                        'usuario'           => $user->personalizacion->usuario_id,
-                        'sucursal_principal'=> $user->personalizacion->sucursal_principal,
-                        'empresa'           => $user->personalizacion->empresa,
-                    ] : null,
-                ]);
+        // 4) Serializar personalización si existe
+        $p = $user->personalizacion;
+        $personalizacion = $p ? [
+            'id'                 => $p->id,
+            'fecha_creacion'     => $p->created_at->toDateTimeString(),
+            'fecha_modificacion' => $p->updated_at->toDateTimeString(),
+            'tema'               => $p->tema,
+            'font_size'          => $p->font_size,
+            'usuario'            => $p->usuario_id,
+            'sucursal_principal' => $p->sucursal_principal,
+            'empresa'            => $p->empresa,
+        ] : null;
+
+        // 5) Respuesta final
+        return response()->json([
+            'id'                => $user->id,
+            'nombre'            => $user->nombre,
+            'email'             => $user->email,
+            'permisos'          => $permisos,
+            'features'          => $features,
+            'personalizacion'   => $personalizacion,
+        ]);
         }
 
     /**
