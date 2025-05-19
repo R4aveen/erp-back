@@ -13,6 +13,10 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Middleware\VerificarAccesoEmpresa;
 
+
+use App\Http\Controllers\Api\AuthController   as ApiAuthController;
+use App\Http\Controllers\Api\FeatureController;
+
 // Rutas públicas
 Route::post('/registro', [AuthController::class, 'registrar']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -20,6 +24,11 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rutas protegidas con JWT
 Route::middleware('auth:api')->group(function () {
 
+    Route::get('/perfil',   [ApiAuthController::class,   'profile'])
+        ->middleware('verificar.activacion');
+    // listado completo de features
+    Route::get('/features', [FeatureController::class,    'index']);
+    
         // CRUD de roles
     Route::get('roles',      [RolController::class, 'index'])->middleware('checkPermiso:rol:read');
     Route::post('roles',     [RolController::class, 'store'])->middleware('checkPermiso:rol:create');

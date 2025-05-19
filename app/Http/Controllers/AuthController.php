@@ -96,32 +96,40 @@ class AuthController extends Controller
      */
     public function perfil(Request $request)
         {
-            /** @var Usuario $user */
-            $user = Auth::user()->load(['roles.permisos', 'personalizacion']);
+                /** @var Usuario $user */
+                $user = Auth::user()->load(['roles.permisos', 'personalizacion']);
 
-            $permisos = $user->roles
-                ->flatMap(fn($rol) => $rol->permisos)
-                ->pluck('clave')
-                ->unique()
-                ->values()
-                ->toArray();
+                $permisos = $user->roles
+                    ->flatMap(fn($rol) => $rol->permisos)
+                    ->pluck('clave')
+                    ->unique()
+                    ->values()
+                    ->toArray();
 
-            return response()->json([
-                'id'              => $user->id,
-                'nombre'          => $user->nombre,
-                'email'           => $user->email,
-                'permisos'        => $permisos,
-                'personalizacion' => $user->personalizacion ? [
-                    'id'                => $user->personalizacion->id,
-                    'fecha_creacion'    => $user->personalizacion->created_at->toDateTimeString(),
-                    'fecha_modificacion'=> $user->personalizacion->updated_at->toDateTimeString(),
-                    'tema'              => $user->personalizacion->tema,
-                    'font_size'         => $user->personalizacion->font_size,
-                    'usuario'           => $user->personalizacion->usuario_id,
-                    'sucursal_principal'=> $user->personalizacion->sucursal_principal,
-                    'empresa'           => $user->personalizacion->empresa,
-                ] : null,
-            ]);
+                $featureClaves = $user->roles()
+                    ->flatMap(fn($rol) => $rol->features)
+                    ->pluck('clave')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                return response()->json([
+                    'id'              => $user->id,
+                    'nombre'          => $user->nombre,
+                    'email'           => $user->email,
+                    'permisos'        => $permisos,
+                    'features'        => $featureClaves,
+                    'personalizacion' => $user->personalizacion ? [
+                        'id'                => $user->personalizacion->id,
+                        'fecha_creacion'    => $user->personalizacion->created_at->toDateTimeString(),
+                        'fecha_modificacion'=> $user->personalizacion->updated_at->toDateTimeString(),
+                        'tema'              => $user->personalizacion->tema,
+                        'font_size'         => $user->personalizacion->font_size,
+                        'usuario'           => $user->personalizacion->usuario_id,
+                        'sucursal_principal'=> $user->personalizacion->sucursal_principal,
+                        'empresa'           => $user->personalizacion->empresa,
+                    ] : null,
+                ]);
         }
 
     /**
