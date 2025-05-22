@@ -142,7 +142,7 @@ class AuthController extends Controller
             'features'          => $features,
             'personalizacion'   => $personalizacion,
         ]);
-        }
+    }
 
     /**
      * Endpoint independiente para obtener sólo la personalización.
