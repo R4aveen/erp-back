@@ -9,18 +9,21 @@ class CreatePermisoRolTable extends Migration
     public function up()
     {
         Schema::create('permiso_rol', function (Blueprint $table) {
-            // forzar que apunte a la tabla "roles"
+            // Foreign keys
             $table->foreignId('rol_id')
-                ->constrained('roles')
-                ->cascadeOnDelete();
+                  ->constrained('roles')
+                  ->cascadeOnDelete();
 
             $table->foreignId('permiso_id')
-                ->constrained('permisos')
-                ->cascadeOnDelete();
+                  ->constrained('permisos')
+                  ->cascadeOnDelete();
 
-            $table->primary(['rol_id','permiso_id']);
+            // Primary composite key
+            $table->primary(['rol_id', 'permiso_id']);
+
+            // Pivot timestamps
+            $table->timestamps();
         });
-
     }
 
     public function down()
