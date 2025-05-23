@@ -15,8 +15,8 @@ class AdminSeeder extends Seeder
     {
         // 1) Empresa matriz
         $empresa = Empresa::firstOrCreate(
-            ['nombre' => 'Tr3s Marías SPA'],
-            ['rut' => '76381234-9', 'descripcion' => 'Empresa matriz del ERP']
+            ['rut' => '76381234-9'],
+            ['nombre' => 'Tr3s Marías SPA', 'descripcion' => 'Empresa matriz del ERP']
         );
 
         // 2) Rol super_admin
@@ -25,18 +25,13 @@ class AdminSeeder extends Seeder
             ['nombre' => 'Super Administrador', 'descripcion' => 'Acceso total al sistema']
         );
 
-        // 2b) Asegurar permiso super_admin
-        $permSuper = Permiso::firstOrCreate(
-            ['clave' => 'super_admin'],
-            ['descripcion' => 'Acceso total al sistema']
-        );
+        // 3) Asignar TODOS los permisos al super_admin
+        $permisosIds = Permiso::pluck('id')->toArray();
+        $rol->permisos()->sync($permisosIds);
 
-        // 2c) Asignar permiso al rol
-        $rol->permisos()->syncWithoutDetaching([$permSuper->id]);
-
-        // 3) Usuario
+        // 4) Usuario admin
         $user = Usuario::firstOrCreate(
-            ['email' => 'root@tresmarias.cl'],
+            ['email' => 'rbarrientos@tresmarias.cl'],
             [
                 'nombre'           => 'Root Administrator',
                 'password'         => Hash::make('root1234'),
@@ -45,23 +40,20 @@ class AdminSeeder extends Seeder
             ]
         );
 
-
-        // 4) Asociación User ↔ Empresa ↔ Rol
-        $user->empresasRoles()->syncWithoutDetaching([
-            $empresa->id => [ 'rol_id' => $rol->id ]
+        // 5) Vincular usuario ↔ rol ↔ empresa (pivot empresa_usuario_rol)
+        $user->roles()->syncWithoutDetaching([
+            $rol->id => ['empresa_id' => $empresa->id]
         ]);
 
-        $this->command->info("✅ Empresa y super-admin creados: root@tresmarias.cl / root1234");
-        
+        // 6) Personalización por defecto
         $user->personalizacion()->updateOrCreate(
-            [],
+            [], 
             [
                 'tema'      => '1',
                 'font_size' => 14,
-                // ya no pones 'empresa' ni 'sucursal_principal'
             ]
         );
 
+        $this->command->info(" Super-admin creado: rbarrientos@tresmarias.cl / root1234");
     }
-    
 }

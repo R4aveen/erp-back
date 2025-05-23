@@ -1,6 +1,7 @@
 <?php
 namespace Database\Seeders;
 
+use App\Models\Feature;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -10,7 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesPermisosSeeder::class,
             AdminSeeder::class,
-
+            FeatureSeeder::class,
         ]);
     }
 }
