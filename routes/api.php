@@ -12,14 +12,14 @@ use App\Http\Controllers\SubempresaController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Middleware\VerificarAccesoEmpresa;
-use App\Http\Controllers\Api\AuthController as ApiAuthController;
+use App\Http\Controllers\Api\AuthController   as ApiAuthController;
 use App\Http\Controllers\Api\FeatureController;
 
-// ─── RUTAS PÚBLICAS ───────────────────────────────────────────────────────────────
+// -------- RUTAS PÚBLICAS ------------------------------------------------
 Route::post('/registro', [AuthController::class, 'registrar']);
 Route::post('/login',    [AuthController::class, 'login']);
 
-// ─── RUTAS PROTEGIDAS (JWT) ───────────────────────────────────────────────────────
+// -------- RUTAS PROTEGIDAS (JWT) -----------------------------------------
 Route::middleware('auth:api')->group(function () {
 
     // Perfil y activación obligatoria
@@ -45,7 +45,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/usuario/personalizacion', [AuthController::class, 'obtenerPersonalizacion']);
     Route::put('/usuario/personalizacion', [AuthController::class, 'actualizarPersonalizacion']);
 
-    // ── ENDPOINTS GENERALES ────────────────────────────────────────────────────────
+    // -- ENDPOINTS GENERALES ----------------------------------------------
 
     // Features
     Route::get('/features', [FeatureController::class, 'index']);
@@ -83,7 +83,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('comunas',                        [DpaController::class, 'comunas']);
     });
 
-    // ── EMPRESAS Y RELACIONES ───────────────────────────────────────────────────────
+    // -- EMPRESAS Y RELACIONES ---------------------------------------------
 
     // CRUD de empresas
     Route::get('/empresas',               [EmpresaController::class, 'index']);
@@ -99,25 +99,73 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('/empresas/{empresa}')
          ->middleware(VerificarAccesoEmpresa::class)
          ->group(function () {
-             // Subempresas
-             Route::get('/subempresas', [EmpresaController::class, 'subempresas'])
-                  ->middleware('permiso:ver_subempresa');
-             Route::post('/subempresas',[SubempresaController::class, 'store'])
-                  ->middleware('permiso:crear_subempresa');
 
-             // Productos
-             Route::post('/productos',             [ProductoController::class, 'store'])
-                  ->middleware('permiso:crear_producto');
-             Route::put('/productos/{producto}',   [ProductoController::class, 'update'])
-                  ->middleware('permiso:editar_producto');
-             Route::delete('/productos/{producto}',[ProductoController::class, 'destroy'])
-                  ->middleware('permiso:eliminar_producto');
+        // -- SUBEMPRESAS -----------------------------------------------
+        // Listar subempresas de la empresa
+        Route::get('/subempresas', [EmpresaController::class, 'subempresas'])
+             ->middleware('permiso:ver_subempresa');
 
-             // Usuarios de la empresa
-             Route::get('/usuarios', [EmpresaController::class, 'listarUsuarios'])
-                  ->middleware('permiso:ver_usuarios');
-             Route::post('/invitar',  [EmpresaController::class, 'invitar'])
-                  ->middleware('permiso:invitar_usuario');
+        // Crear nueva subempresa
+        Route::post('/subempresas', [SubempresaController::class, 'store'])
+             ->middleware('permiso:crear_subempresa');
+
+        // -- PRODUCTOS ------------------------------------------------
+        // Crear producto en la empresa
+        Route::post('/productos', [ProductoController::class, 'store'])
+             ->middleware('permiso:crear_producto');
+
+        // Actualizar producto existente
+        Route::put('/productos/{producto}', [ProductoController::class, 'update'])
+             ->middleware('permiso:editar_producto');
+
+        // Eliminar producto
+        Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])
+             ->middleware('permiso:eliminar_producto');
+
+        // -- USUARIOS A NIVEL EMPRESA --------------------------------
+        // Listar todos los usuarios de la empresa
+        Route::get('/usuarios', [EmpresaController::class, 'listarUsuarios'])
+             ->middleware('permiso:ver_usuarios');
+
+        // Invitar nuevo usuario a la empresa
+        Route::post('/invitar', [EmpresaController::class, 'invitar'])
+             ->middleware('permiso:invitar_usuario');
+
+        // -- RUTAS ANIDADAS EN SUBEMPRESA ----------------------------
+        Route::prefix('/subempresas/{subempresa}')
+             ->group(function () {
+
+            // Listar usuarios de la subempresa concreta
+            Route::get('/usuarios', [SubempresaController::class, 'usuarios'])
+                 ->middleware('permiso:ver_usuarios_subempresa');
+
+            // -- SUCURSALES ------------------------------------------
+            // Listar sucursales de esa subempresa
+            Route::get('/sucursales', [SubempresaController::class, 'sucursales'])
+                 ->middleware('permiso:ver_sucursal');
+
+            // Crear sucursal en esa subempresa
+            Route::post('/sucursales', [SucursalController::class, 'store'])
+                 ->middleware('permiso:crear_sucursal');
+
+            // Mostrar sucursal específica
+            Route::get('/sucursales/{sucursal}', [SucursalController::class, 'show'])
+                 ->middleware('permiso:ver_sucursal');
+
+            // Actualizar sucursal
+            Route::put('/sucursales/{sucursal}', [SucursalController::class, 'update'])
+                 ->middleware('permiso:editar_sucursal');
+
+            // Eliminar sucursal
+            Route::delete('/sucursales/{sucursal}', [SucursalController::class, 'destroy'])
+                 ->middleware('permiso:eliminar_sucursal');
+
+            // -- USUARIOS DE NIVEL SUCURSAL ------------------------
+            // Listar usuarios (empleados) de la sucursal concreta
+            Route::get('/sucursales/{sucursal}/usuarios', [SucursalController::class, 'usuarios'])
+                 ->middleware('permiso:ver_usuarios_sucursal');
+        });
+
     });
 
     // CRUD de subempresas sueltas
@@ -130,7 +178,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/subempresas/{subempresa}/sucursales',
          [SubempresaController::class, 'sucursales']);
 
-    // CRUD de sucursales
+    // CRUD de sucursales sueltas
     Route::get('/sucursales',                    [SucursalController::class, 'index']);
     Route::post('/subempresas/{subempresa}/sucursales',
          [SucursalController::class, 'store'])
@@ -144,7 +192,7 @@ Route::middleware('auth:api')->group(function () {
 
     // Rutas de permisos de usuario
     Route::prefix('usuarios/{usuario}/permisos')
-         ->middleware(['auth:api','permiso:usuario:update'])
+         ->middleware(['auth:api', 'permiso:usuario:update'])
          ->group(function () {
              Route::get('/',    [UserPermissionController::class,'index']);
              Route::post('/',   [UserPermissionController::class,'store']);
