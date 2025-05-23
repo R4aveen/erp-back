@@ -64,7 +64,7 @@ Route::middleware('auth:api')->group(function () {
          ->middleware('checkPermiso:usuario:read');
 
     // División Político Administrativa (DPA)
-    Route::prefix()->group(function () {
+    Route::prefix('v1')->group(function () {
         Route::get('regiones',                       [DpaController::class, 'regiones']);
         Route::get('regiones/{region}/provincias',   [DpaController::class, 'provincias']);
         Route::get('provincias',                     [DpaController::class, 'provincias']);
