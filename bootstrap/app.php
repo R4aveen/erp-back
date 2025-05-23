@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (\Illuminate\Foundation\Configuration\Middleware $middleware) {
         $middleware->alias([
             'auth'     => \App\Http\Middleware\Authenticate::class,
-            'checkPermiso'  => \App\Http\Middleware\CheckPermiso::class,
+            'permiso'  => \App\Http\Middleware\CheckPermiso::class,
             'rol'      => \App\Http\Middleware\CheckRol::class,
             'verificar.activacion' => \App\Http\Middleware\VerificarActivacion::class, 
         ]);
