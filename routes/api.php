@@ -141,6 +141,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/invitar',  [EmpresaController::class, 'invitar'])
              ->middleware('checkPermiso:invitar_usuario');
     });
+    
 
     // Rutas de permisos de usuario
     Route::prefix('usuarios/{usuario}/permisos')
