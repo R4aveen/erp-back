@@ -30,7 +30,7 @@ class Usuario extends Authenticatable implements JWTSubject
                 'empresa_usuario_rol', 
                 'usuario_id', 
                 'rol_id'
-                )->withTimestamps();
+                )->withPivot('empresa_id')->withTimestamps();
         }
 
         public function permisosDirectos()
