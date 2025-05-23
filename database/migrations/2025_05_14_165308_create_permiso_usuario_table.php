@@ -9,7 +9,6 @@ class CreatePermisoUsuarioTable extends Migration
     public function up()
     {
         Schema::create('permiso_usuario', function (Blueprint $table) {
-            // Foreign keys
             $table->foreignId('usuario_id')
                   ->constrained('usuarios')
                   ->cascadeOnDelete();
@@ -18,10 +17,8 @@ class CreatePermisoUsuarioTable extends Migration
                   ->constrained('permisos')
                   ->cascadeOnDelete();
 
-            // Primary composite key
             $table->primary(['usuario_id', 'permiso_id']);
 
-            // Pivot timestamps
             $table->timestamps();
         });
     }

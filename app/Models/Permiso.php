@@ -10,11 +10,17 @@ class Permiso extends Model
 
     public function roles()
     {
-        return $this->belongsToMany(Rol::class, 'permiso_rol', 'permiso_id', 'rol_id');
+        return $this->belongsToMany(
+            Rol::class, 
+            'permiso_rol', 
+            'permiso_id', 
+            'rol_id');
     }
 
     public function usuarios()
     {
-        return $this->belongsToMany(Usuario::class, 'permiso_usuario');
+        return $this->belongsToMany(
+            Usuario::class, 
+            'permiso_usuario');
     }
 }
