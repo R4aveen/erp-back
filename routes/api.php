@@ -86,17 +86,17 @@ Route::middleware('auth:api')->group(function () {
     // -- EMPRESAS Y RELACIONES ---------------------------------------------
 
     // CRUD de empresas
-    Route::get('/empresas',               [EmpresaController::class, 'index']);
-    Route::post('/empresas',              [EmpresaController::class, 'store'])
+    Route::get('/empresa',               [EmpresaController::class, 'index']);
+    Route::post('/empresa',              [EmpresaController::class, 'store'])
          ->middleware('permiso:empresa:create');
-    Route::get('/empresas/{empresa}',     [EmpresaController::class, 'show']);
-    Route::put('/empresas/{empresa}',     [EmpresaController::class, 'update'])
+    Route::get('/empresa/{empresa}',     [EmpresaController::class, 'show']);
+    Route::patch('/empresa/{empresa}',     [EmpresaController::class, 'update'])
          ->middleware('permiso:empresa:update');
-    Route::delete('/empresas/{empresa}',  [EmpresaController::class, 'destroy'])
+    Route::delete('/empresa/{empresa}',  [EmpresaController::class, 'destroy'])
          ->middleware('permiso:empresa:delete');
 
     // Relaciones de empresa (anidadas)
-    Route::prefix('/empresas/{empresa}')
+    Route::prefix('/empresa/{empresa}')
          ->middleware(VerificarAccesoEmpresa::class)
          ->group(function () {
 

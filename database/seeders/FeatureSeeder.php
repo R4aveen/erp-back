@@ -66,7 +66,7 @@ class FeatureSeeder extends Seeder
                 'subgrupo'   => null,
             ],
             [
-                'clave'      => 'gestion_empresa',
+                'clave'      => 'gestion-empresa',
                 'texto'      => 'Gestión de Empresas',
                 'ruta'       => '/gestion/empresa',
                 'componente' => 'EmpresaPage',
@@ -76,7 +76,7 @@ class FeatureSeeder extends Seeder
                 'subgrupo'   => null,
             ],
             [
-                'clave'      => 'gestion_subempresa',
+                'clave'      => 'gestion-subempresa',
                 'texto'      => 'Gestión de Subempresas',
                 'ruta'       => '/gestion/subempresa',
                 'componente' => 'SubEmpresa',
@@ -86,7 +86,7 @@ class FeatureSeeder extends Seeder
                 'subgrupo'   => null,
             ],
             [
-                'clave'      => 'gestion_sucursal',
+                'clave'      => 'gestion-sucursal',
                 'texto'      => 'Gestión de Sucursales',
                 'ruta'       => '/gestion/sucursal',
                 'componente' => 'Sucursales',
@@ -96,7 +96,7 @@ class FeatureSeeder extends Seeder
                 'subgrupo'   => null,
             ],
             [
-                'clave'      => 'roles_permisos',
+                'clave'      => 'gestion-roles',
                 'texto'      => 'Roles y Permisos',
                 'ruta'       => '/gestion/roles-permisos',
                 'componente' => 'RolesPermisos',
@@ -106,7 +106,7 @@ class FeatureSeeder extends Seeder
                 'subgrupo'   => null,
             ],
             [
-                'clave'      => 'gestion_usuarios',
+                'clave'      => 'gestion-usuarios',
                 'texto'      => 'Gestión de Usuarios',
                 'ruta'       => '/gestion/usuarios',
                 'componente' => 'GestionUsuarios',
