@@ -11,7 +11,6 @@ class Subempresa extends Model
         'nombre',
         'slug',
         'descripcion',
-        'empresa_id',
     ];
 
     public function empresa()

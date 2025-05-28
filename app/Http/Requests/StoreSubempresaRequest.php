@@ -15,7 +15,7 @@ class StoreSubempresaRequest extends FormRequest
     {
         return [
             'nombre'      => 'required|string|max:255',
-            'empresa_id'  => 'required|exists:empresas,id',
+            'slug'        => 'required|string|max:255|unique:subempresas,slug',
             'descripcion' => 'nullable|string',
         ];
     }
